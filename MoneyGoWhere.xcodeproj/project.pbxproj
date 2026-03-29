@@ -1,0 +1,563 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		009600FF798FF5027790B04E /* CurrencyConversionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BF2ADFE75B490851433B52 /* CurrencyConversionService.swift */; };
+		0ECA5A35593634850FC30747 /* Contents.json in Sources */ = {isa = PBXBuildFile; fileRef = 906C815837346F5D3B2A5DB0 /* Contents.json */; };
+		16A1CEB5636D02333377673B /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1105DDD31A640990B1F41EE1 /* ChatView.swift */; };
+		1E080A1105BB6569397CB2F6 /* MoneyGoWhereApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72ABC777AEB9C69A272D2EBC /* MoneyGoWhereApp.swift */; };
+		20CF77F950EC3D3D1F1B1AF5 /* InsightsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F47BF63B1C595F656D40CBA /* InsightsEngine.swift */; };
+		24A03912C5F6BDA167597D11 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2433130FC39D176F3B1E3E8 /* SyncService.swift */; };
+		35A13E0022858B79AEF81FAC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EA0BC3F3ADDB9077B2B81B17 /* Foundation.framework */; };
+		402073E57AFCE813296C08E1 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE9C20E2B9FB8C688BF31023 /* NotificationService.swift */; };
+		45D943A7C4E0E1C4840144F7 /* Contents.json in Sources */ = {isa = PBXBuildFile; fileRef = 536EF0120CEDDB5755FBE344 /* Contents.json */; };
+		4649CF6140090ACF264401F3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EA0BC3F3ADDB9077B2B81B17 /* Foundation.framework */; };
+		46C65872CE18C001E6531202 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72A6B610864F2E190093652C /* RootView.swift */; };
+		523ACD3732C18A1902C63D5B /* CurrencyConversionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35963A40A935F24E78CFF484 /* CurrencyConversionServiceTests.swift */; };
+		564362E95A57103D5A056D22 /* LocalPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F5599579352321A932CAC64 /* LocalPersistence.swift */; };
+		61A07033E893B9AF500B0591 /* FinanceAssistantServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB17C4E7014233DE0CE1E348 /* FinanceAssistantServiceTests.swift */; };
+		6B7F91504EA3DCEC93B471E0 /* InsightsEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA3040EF593A3A997FE4852 /* InsightsEngineTests.swift */; };
+		6C116612D3D2CB461F550658 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A3BF7EA11EE42D533CD323 /* DashboardView.swift */; };
+		73BA722BC6BB67727B850653 /* AccountService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A57DBA755D1794F83B477BA /* AccountService.swift */; };
+		8AFF1824FCB5FCF8894981FB /* ProjectionEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558845A603ADF18695260161 /* ProjectionEngineTests.swift */; };
+		8D17CAAE5F373BA42C3FA58D /* CatalogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866BC201A8B7B38B065EB04B /* CatalogService.swift */; };
+		A1B54A2A0AB2D1EC36E91928 /* FinanceAssistantService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B781F466A7F6C5A537A249F /* FinanceAssistantService.swift */; };
+		A389939519081CC0177E0010 /* MainShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD0F75B4C15E90DF00D4D64 /* MainShellView.swift */; };
+		A7C107CCA7C68C67FB76263E /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA8829CD8F9058B30347391C /* OnboardingFlowView.swift */; };
+		B2591629BDD50AF2B0E0A718 /* Contents.json in Sources */ = {isa = PBXBuildFile; fileRef = 3FA84E383155B50F4BF8D323 /* Contents.json */; };
+		B6DB19DA5FF802F2B21741EC /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AEC49A74B4FB67C0B1E4ED8 /* Formatting.swift */; };
+		C08EFDE95510D536B95F8753 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1337C23D08248619B0BD7B3F /* SubscriptionService.swift */; };
+		D325C6799A0D93E1F5382E61 /* FinanceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 320EF616FFA478A9D49FDC63 /* FinanceModels.swift */; };
+		D387FC51303B4E3420F27374 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F12696493A704477CCE138 /* AppModel.swift */; };
+		E87EFD596476C75F557184BE /* RecurringItemEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50B0A58E711757B94A28F55 /* RecurringItemEditorView.swift */; };
+		FC2125792EC3DEADC29D8B30 /* ProjectionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E050AD7F139270BA65C62AB9 /* ProjectionEngine.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		65BE8AE0F2E404050DC99432 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 64CD631B84DA2760BB0F6431 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 257B5161920BAA3C1C8297D0;
+			remoteInfo = MoneyGoWhere;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		1105DDD31A640990B1F41EE1 /* ChatView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChatView.swift; path = MoneyGoWhere/Views/ChatView.swift; sourceTree = "<group>"; };
+		1337C23D08248619B0BD7B3F /* SubscriptionService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SubscriptionService.swift; path = MoneyGoWhere/Services/SubscriptionService.swift; sourceTree = "<group>"; };
+		1A57DBA755D1794F83B477BA /* AccountService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AccountService.swift; path = MoneyGoWhere/Services/AccountService.swift; sourceTree = "<group>"; };
+		320EF616FFA478A9D49FDC63 /* FinanceModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FinanceModels.swift; path = MoneyGoWhere/Domain/FinanceModels.swift; sourceTree = "<group>"; };
+		35963A40A935F24E78CFF484 /* CurrencyConversionServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CurrencyConversionServiceTests.swift; path = MoneyGoWhereTests/CurrencyConversionServiceTests.swift; sourceTree = "<group>"; };
+		3CA3040EF593A3A997FE4852 /* InsightsEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = InsightsEngineTests.swift; path = MoneyGoWhereTests/InsightsEngineTests.swift; sourceTree = "<group>"; };
+		3F47BF63B1C595F656D40CBA /* InsightsEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = InsightsEngine.swift; path = MoneyGoWhere/Services/InsightsEngine.swift; sourceTree = "<group>"; };
+		3FA84E383155B50F4BF8D323 /* Contents.json */ = {isa = PBXFileReference; includeInIndex = 1; name = Contents.json; path = MoneyGoWhere/Assets.xcassets/AccentColor.colorset/Contents.json; sourceTree = "<group>"; };
+		536EF0120CEDDB5755FBE344 /* Contents.json */ = {isa = PBXFileReference; includeInIndex = 1; name = Contents.json; path = MoneyGoWhere/Assets.xcassets/Contents.json; sourceTree = "<group>"; };
+		558845A603ADF18695260161 /* ProjectionEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProjectionEngineTests.swift; path = MoneyGoWhereTests/ProjectionEngineTests.swift; sourceTree = "<group>"; };
+		5B781F466A7F6C5A537A249F /* FinanceAssistantService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FinanceAssistantService.swift; path = MoneyGoWhere/Services/FinanceAssistantService.swift; sourceTree = "<group>"; };
+		691E2E668322F9F66E09721B /* MoneyGoWhereTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MoneyGoWhereTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6AEC49A74B4FB67C0B1E4ED8 /* Formatting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Formatting.swift; path = MoneyGoWhere/Domain/Formatting.swift; sourceTree = "<group>"; };
+		72A6B610864F2E190093652C /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = MoneyGoWhere/Views/RootView.swift; sourceTree = "<group>"; };
+		72ABC777AEB9C69A272D2EBC /* MoneyGoWhereApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MoneyGoWhereApp.swift; path = MoneyGoWhere/App/MoneyGoWhereApp.swift; sourceTree = "<group>"; };
+		866BC201A8B7B38B065EB04B /* CatalogService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CatalogService.swift; path = MoneyGoWhere/Services/CatalogService.swift; sourceTree = "<group>"; };
+		8B61CB1ED7D02A3E7B4505DF /* MoneyGoWhere.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MoneyGoWhere.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		906C815837346F5D3B2A5DB0 /* Contents.json */ = {isa = PBXFileReference; includeInIndex = 1; name = Contents.json; path = MoneyGoWhere/Assets.xcassets/AppIcon.appiconset/Contents.json; sourceTree = "<group>"; };
+		94BF2ADFE75B490851433B52 /* CurrencyConversionService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CurrencyConversionService.swift; path = MoneyGoWhere/Services/CurrencyConversionService.swift; sourceTree = "<group>"; };
+		9F5599579352321A932CAC64 /* LocalPersistence.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LocalPersistence.swift; path = MoneyGoWhere/Services/LocalPersistence.swift; sourceTree = "<group>"; };
+		A2433130FC39D176F3B1E3E8 /* SyncService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SyncService.swift; path = MoneyGoWhere/Services/SyncService.swift; sourceTree = "<group>"; };
+		BCD0F75B4C15E90DF00D4D64 /* MainShellView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MainShellView.swift; path = MoneyGoWhere/Views/MainShellView.swift; sourceTree = "<group>"; };
+		CE9C20E2B9FB8C688BF31023 /* NotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotificationService.swift; path = MoneyGoWhere/Services/NotificationService.swift; sourceTree = "<group>"; };
+		D50B0A58E711757B94A28F55 /* RecurringItemEditorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RecurringItemEditorView.swift; path = MoneyGoWhere/Views/RecurringItemEditorView.swift; sourceTree = "<group>"; };
+		D9A3BF7EA11EE42D533CD323 /* DashboardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DashboardView.swift; path = MoneyGoWhere/Views/DashboardView.swift; sourceTree = "<group>"; };
+		DB17C4E7014233DE0CE1E348 /* FinanceAssistantServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FinanceAssistantServiceTests.swift; path = MoneyGoWhereTests/FinanceAssistantServiceTests.swift; sourceTree = "<group>"; };
+		E050AD7F139270BA65C62AB9 /* ProjectionEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProjectionEngine.swift; path = MoneyGoWhere/Services/ProjectionEngine.swift; sourceTree = "<group>"; };
+		EA0BC3F3ADDB9077B2B81B17 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		F0F12696493A704477CCE138 /* AppModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppModel.swift; path = MoneyGoWhere/App/AppModel.swift; sourceTree = "<group>"; };
+		FA8829CD8F9058B30347391C /* OnboardingFlowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingFlowView.swift; path = MoneyGoWhere/Views/OnboardingFlowView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C6D27E8EA3CF33C91FB88074 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				35A13E0022858B79AEF81FAC /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E650EFF8C268F6C1C9B9F7E3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4649CF6140090ACF264401F3 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		22E2AE9B7ABE64BEABDB5075 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3310175C5F36E71E74D83027 /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		303EA701878B081CCC8A03AC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8B61CB1ED7D02A3E7B4505DF /* MoneyGoWhere.app */,
+				691E2E668322F9F66E09721B /* MoneyGoWhereTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3310175C5F36E71E74D83027 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				EA0BC3F3ADDB9077B2B81B17 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		5A4B7574B6C9BE77FB6D9BA6 /* MoneyGoWhere */ = {
+			isa = PBXGroup;
+			children = (
+				F0F12696493A704477CCE138 /* AppModel.swift */,
+				72ABC777AEB9C69A272D2EBC /* MoneyGoWhereApp.swift */,
+				3FA84E383155B50F4BF8D323 /* Contents.json */,
+				906C815837346F5D3B2A5DB0 /* Contents.json */,
+				536EF0120CEDDB5755FBE344 /* Contents.json */,
+				320EF616FFA478A9D49FDC63 /* FinanceModels.swift */,
+				6AEC49A74B4FB67C0B1E4ED8 /* Formatting.swift */,
+				1A57DBA755D1794F83B477BA /* AccountService.swift */,
+				866BC201A8B7B38B065EB04B /* CatalogService.swift */,
+				94BF2ADFE75B490851433B52 /* CurrencyConversionService.swift */,
+				5B781F466A7F6C5A537A249F /* FinanceAssistantService.swift */,
+				3F47BF63B1C595F656D40CBA /* InsightsEngine.swift */,
+				9F5599579352321A932CAC64 /* LocalPersistence.swift */,
+				CE9C20E2B9FB8C688BF31023 /* NotificationService.swift */,
+				E050AD7F139270BA65C62AB9 /* ProjectionEngine.swift */,
+				1337C23D08248619B0BD7B3F /* SubscriptionService.swift */,
+				A2433130FC39D176F3B1E3E8 /* SyncService.swift */,
+				1105DDD31A640990B1F41EE1 /* ChatView.swift */,
+				D9A3BF7EA11EE42D533CD323 /* DashboardView.swift */,
+				BCD0F75B4C15E90DF00D4D64 /* MainShellView.swift */,
+				FA8829CD8F9058B30347391C /* OnboardingFlowView.swift */,
+				D50B0A58E711757B94A28F55 /* RecurringItemEditorView.swift */,
+				72A6B610864F2E190093652C /* RootView.swift */,
+			);
+			name = MoneyGoWhere;
+			sourceTree = "<group>";
+		};
+		9568F2A464235695F880EE45 /* MoneyGoWhereTests */ = {
+			isa = PBXGroup;
+			children = (
+				35963A40A935F24E78CFF484 /* CurrencyConversionServiceTests.swift */,
+				DB17C4E7014233DE0CE1E348 /* FinanceAssistantServiceTests.swift */,
+				3CA3040EF593A3A997FE4852 /* InsightsEngineTests.swift */,
+				558845A603ADF18695260161 /* ProjectionEngineTests.swift */,
+			);
+			name = MoneyGoWhereTests;
+			sourceTree = "<group>";
+		};
+		D662A7BF27D6A33BBC5BD937 = {
+			isa = PBXGroup;
+			children = (
+				303EA701878B081CCC8A03AC /* Products */,
+				22E2AE9B7ABE64BEABDB5075 /* Frameworks */,
+				5A4B7574B6C9BE77FB6D9BA6 /* MoneyGoWhere */,
+				9568F2A464235695F880EE45 /* MoneyGoWhereTests */,
+			);
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		257B5161920BAA3C1C8297D0 /* MoneyGoWhere */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E06881102E4D135A0E31BA2C /* Build configuration list for PBXNativeTarget "MoneyGoWhere" */;
+			buildPhases = (
+				FBFFAFFCA7BAB144A57558B4 /* Sources */,
+				E650EFF8C268F6C1C9B9F7E3 /* Frameworks */,
+				6FCBDBC9B153BB74078816CE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MoneyGoWhere;
+			productName = MoneyGoWhere;
+			productReference = 8B61CB1ED7D02A3E7B4505DF /* MoneyGoWhere.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F7C3F33B229C51370E1DA398 /* MoneyGoWhereTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 06916591743A81993C8A1826 /* Build configuration list for PBXNativeTarget "MoneyGoWhereTests" */;
+			buildPhases = (
+				3013B9EE0CAA4C2092B7F143 /* Sources */,
+				C6D27E8EA3CF33C91FB88074 /* Frameworks */,
+				300A46EA43A512B378AA666D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				089BFF3CF5E7C6BDC50580B1 /* PBXTargetDependency */,
+			);
+			name = MoneyGoWhereTests;
+			productName = MoneyGoWhereTests;
+			productReference = 691E2E668322F9F66E09721B /* MoneyGoWhereTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		64CD631B84DA2760BB0F6431 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1240;
+				LastUpgradeCheck = 2640;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 87731298E728B6F8EFBBEEAA /* Build configuration list for PBXProject "MoneyGoWhere" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D662A7BF27D6A33BBC5BD937;
+			productRefGroup = 303EA701878B081CCC8A03AC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				257B5161920BAA3C1C8297D0 /* MoneyGoWhere */,
+				F7C3F33B229C51370E1DA398 /* MoneyGoWhereTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		300A46EA43A512B378AA666D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6FCBDBC9B153BB74078816CE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3013B9EE0CAA4C2092B7F143 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				523ACD3732C18A1902C63D5B /* CurrencyConversionServiceTests.swift in Sources */,
+				61A07033E893B9AF500B0591 /* FinanceAssistantServiceTests.swift in Sources */,
+				6B7F91504EA3DCEC93B471E0 /* InsightsEngineTests.swift in Sources */,
+				8AFF1824FCB5FCF8894981FB /* ProjectionEngineTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FBFFAFFCA7BAB144A57558B4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D387FC51303B4E3420F27374 /* AppModel.swift in Sources */,
+				1E080A1105BB6569397CB2F6 /* MoneyGoWhereApp.swift in Sources */,
+				B2591629BDD50AF2B0E0A718 /* Contents.json in Sources */,
+				0ECA5A35593634850FC30747 /* Contents.json in Sources */,
+				45D943A7C4E0E1C4840144F7 /* Contents.json in Sources */,
+				D325C6799A0D93E1F5382E61 /* FinanceModels.swift in Sources */,
+				B6DB19DA5FF802F2B21741EC /* Formatting.swift in Sources */,
+				73BA722BC6BB67727B850653 /* AccountService.swift in Sources */,
+				8D17CAAE5F373BA42C3FA58D /* CatalogService.swift in Sources */,
+				009600FF798FF5027790B04E /* CurrencyConversionService.swift in Sources */,
+				A1B54A2A0AB2D1EC36E91928 /* FinanceAssistantService.swift in Sources */,
+				20CF77F950EC3D3D1F1B1AF5 /* InsightsEngine.swift in Sources */,
+				564362E95A57103D5A056D22 /* LocalPersistence.swift in Sources */,
+				402073E57AFCE813296C08E1 /* NotificationService.swift in Sources */,
+				FC2125792EC3DEADC29D8B30 /* ProjectionEngine.swift in Sources */,
+				C08EFDE95510D536B95F8753 /* SubscriptionService.swift in Sources */,
+				24A03912C5F6BDA167597D11 /* SyncService.swift in Sources */,
+				16A1CEB5636D02333377673B /* ChatView.swift in Sources */,
+				6C116612D3D2CB461F550658 /* DashboardView.swift in Sources */,
+				A389939519081CC0177E0010 /* MainShellView.swift in Sources */,
+				A7C107CCA7C68C67FB76263E /* OnboardingFlowView.swift in Sources */,
+				E87EFD596476C75F557184BE /* RecurringItemEditorView.swift in Sources */,
+				46C65872CE18C001E6531202 /* RootView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		089BFF3CF5E7C6BDC50580B1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = MoneyGoWhere;
+			target = 257B5161920BAA3C1C8297D0 /* MoneyGoWhere */;
+			targetProxy = 65BE8AE0F2E404050DC99432 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		169D31CBE089FBA99C34E8AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		2E9252800311B9CC1CC5C888 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.moneygowhere.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		5F6360CA9E40E945F90099A8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.moneygowhere.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MoneyGoWhere.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MoneyGoWhere";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		92D30B14CF7FD3599773A43E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.moneygowhere.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		95191FB7A73AAEE89F3B728A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		C3D511537DA326E40DA124CF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.moneygowhere.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MoneyGoWhere.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MoneyGoWhere";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		06916591743A81993C8A1826 /* Build configuration list for PBXNativeTarget "MoneyGoWhereTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5F6360CA9E40E945F90099A8 /* Release */,
+				C3D511537DA326E40DA124CF /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		87731298E728B6F8EFBBEEAA /* Build configuration list for PBXProject "MoneyGoWhere" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95191FB7A73AAEE89F3B728A /* Debug */,
+				169D31CBE089FBA99C34E8AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E06881102E4D135A0E31BA2C /* Build configuration list for PBXNativeTarget "MoneyGoWhere" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2E9252800311B9CC1CC5C888 /* Release */,
+				92D30B14CF7FD3599773A43E /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 64CD631B84DA2760BB0F6431 /* Project object */;
+}
