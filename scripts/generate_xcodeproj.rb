@@ -74,6 +74,22 @@ add_files(test_group, TEST_SOURCES_PATH, test_target)
 
 test_target.add_dependency(app_target)
 
+# --- RevenueCat SPM dependency ---
+revenuecat_package = project.new(Xcodeproj::Project::Object::XCRemoteSwiftPackageReference)
+revenuecat_package.repositoryURL = "https://github.com/RevenueCat/purchases-ios"
+revenuecat_package.requirement = {
+  "kind" => "upToNextMajorVersion",
+  "minimumVersion" => "5.0.0"
+}
+project.root_object.package_references << revenuecat_package
+
+revenuecat_dep = project.new(Xcodeproj::Project::Object::XCSwiftPackageProductDependency)
+revenuecat_dep.package = revenuecat_package
+revenuecat_dep.product_name = "RevenueCat"
+
+app_target.package_product_dependencies << revenuecat_dep
+# --- end RevenueCat ---
+
 scheme = Xcodeproj::XCScheme.new
 scheme.configure_with_targets(app_target, test_target, launch_target: app_target)
 scheme.save_as(PROJECT_PATH, "MoneyGoWhere", true)

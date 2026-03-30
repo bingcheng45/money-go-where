@@ -7,6 +7,7 @@ struct OnboardingFlowView: View {
     @State private var profile = UserProfile.empty
     @State private var firstItem = RecurringItemFormState.blank(defaultCurrencyCode: UserProfile.empty.defaultCurrencyCode, paymentMethod: "")
     @State private var selectedPaywallPlan: SubscriptionPlan = .yearly
+    @State private var paywallOfferings: [SubscriptionOffering] = []
 
     private let supportedCurrencies = ["USD", "SGD", "EUR", "GBP", "JPY"]
 
@@ -31,6 +32,11 @@ struct OnboardingFlowView: View {
                 profile = model.session.profile
                 firstItem = .blank(defaultCurrencyCode: profile.defaultCurrencyCode, paymentMethod: profile.defaultPaymentMethodLabel)
                 firstItem.nextDueDate = Calendar.current.startOfDay(for: .now)
+            }
+        }
+        .task {
+            if let loaded = try? await model.subscriptionService.offerings {
+                paywallOfferings = loaded
             }
         }
     }
@@ -248,7 +254,7 @@ struct OnboardingFlowView: View {
                 .foregroundStyle(.secondary)
 
             VStack(spacing: 12) {
-                ForEach(model.subscriptionService.offerings) { offering in
+                ForEach(paywallOfferings) { offering in
                     Button {
                         selectedPaywallPlan = offering.plan
                     } label: {

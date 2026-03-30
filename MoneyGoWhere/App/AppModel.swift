@@ -267,9 +267,6 @@ final class AppModel {
             upsert(item: firstItem)
             updateMemories(with: firstItem)
         }
-        if let startTrialPlan {
-            session.entitlement = subscriptionService.beginTrial(for: startTrialPlan, from: session.entitlement)
-        }
         session.hasCompletedOnboarding = true
         if session.chatThreads.isEmpty {
             let thread = Self.makeWelcomeThread()
@@ -278,16 +275,38 @@ final class AppModel {
         }
         selectedDate = Calendar.current.startOfDay(for: .now)
         saveSession()
+        if let startTrialPlan {
+            Task {
+                do {
+                    session.entitlement = try await subscriptionService.beginTrial(for: startTrialPlan, from: session.entitlement)
+                    saveSession()
+                } catch {
+                    statusBanner = "Unable to start trial. Please try again."
+                }
+            }
+        }
     }
 
     func purchase(plan: SubscriptionPlan) {
-        session.entitlement = subscriptionService.purchase(plan: plan, from: session.entitlement)
-        saveSession()
+        Task {
+            do {
+                session.entitlement = try await subscriptionService.purchase(plan: plan, from: session.entitlement)
+                saveSession()
+            } catch {
+                statusBanner = "Purchase failed. Please try again."
+            }
+        }
     }
 
     func restorePurchases() {
-        session.entitlement = subscriptionService.restore(snapshot: session.entitlement)
-        saveSession()
+        Task {
+            do {
+                session.entitlement = try await subscriptionService.restore(snapshot: session.entitlement)
+                saveSession()
+            } catch {
+                statusBanner = "Restore failed. Please try again."
+            }
+        }
     }
 
     func dismissBanner() {

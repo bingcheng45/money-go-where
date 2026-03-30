@@ -1,33 +1,37 @@
 import Foundation
 
-protocol SubscriptionProviding {
-    var offerings: [SubscriptionOffering] { get }
-    func beginTrial(for plan: SubscriptionPlan, from snapshot: EntitlementSnapshot) -> EntitlementSnapshot
-    func purchase(plan: SubscriptionPlan, from snapshot: EntitlementSnapshot) -> EntitlementSnapshot
-    func restore(snapshot: EntitlementSnapshot) -> EntitlementSnapshot
+protocol SubscriptionProviding: Sendable {
+    var offerings: [SubscriptionOffering] { get async throws }
+    func beginTrial(for plan: SubscriptionPlan, from snapshot: EntitlementSnapshot) async throws -> EntitlementSnapshot
+    func purchase(plan: SubscriptionPlan, from snapshot: EntitlementSnapshot) async throws -> EntitlementSnapshot
+    func restore(snapshot: EntitlementSnapshot) async throws -> EntitlementSnapshot
 }
 
 struct MockSubscriptionService: SubscriptionProviding {
-    let offerings: [SubscriptionOffering] = [
-        SubscriptionOffering(
-            id: UUID(),
-            plan: .monthly,
-            title: "Monthly",
-            subtitle: "7-day free trial, then billed monthly",
-            priceLabel: "$3.99 / month",
-            hasFreeTrial: true
-        ),
-        SubscriptionOffering(
-            id: UUID(),
-            plan: .yearly,
-            title: "Yearly",
-            subtitle: "Best value, billed yearly after the trial",
-            priceLabel: "$29.99 / year",
-            hasFreeTrial: true
-        )
-    ]
+    var offerings: [SubscriptionOffering] {
+        get async throws {
+            [
+                SubscriptionOffering(
+                    id: UUID(),
+                    plan: .monthly,
+                    title: "Monthly",
+                    subtitle: "7-day free trial, then billed monthly",
+                    priceLabel: "$3.99 / month",
+                    hasFreeTrial: true
+                ),
+                SubscriptionOffering(
+                    id: UUID(),
+                    plan: .yearly,
+                    title: "Yearly",
+                    subtitle: "Best value, billed yearly after the trial",
+                    priceLabel: "$29.99 / year",
+                    hasFreeTrial: true
+                )
+            ]
+        }
+    }
 
-    func beginTrial(for plan: SubscriptionPlan, from snapshot: EntitlementSnapshot) -> EntitlementSnapshot {
+    func beginTrial(for plan: SubscriptionPlan, from snapshot: EntitlementSnapshot) async throws -> EntitlementSnapshot {
         let now = Date()
         return EntitlementSnapshot(
             trialStartedAt: now,
@@ -37,7 +41,7 @@ struct MockSubscriptionService: SubscriptionProviding {
         )
     }
 
-    func purchase(plan: SubscriptionPlan, from snapshot: EntitlementSnapshot) -> EntitlementSnapshot {
+    func purchase(plan: SubscriptionPlan, from snapshot: EntitlementSnapshot) async throws -> EntitlementSnapshot {
         EntitlementSnapshot(
             trialStartedAt: snapshot.trialStartedAt,
             trialEndsAt: snapshot.trialEndsAt,
@@ -46,7 +50,7 @@ struct MockSubscriptionService: SubscriptionProviding {
         )
     }
 
-    func restore(snapshot: EntitlementSnapshot) -> EntitlementSnapshot {
+    func restore(snapshot: EntitlementSnapshot) async throws -> EntitlementSnapshot {
         snapshot
     }
 }
