@@ -1,6 +1,7 @@
 import Foundation
 import UserNotifications
 
+@MainActor
 protocol ReminderScheduling {
     func synchronizeReminders(for items: [RecurringItem], profile: UserProfile) async -> NotificationPermissionStatus
 }

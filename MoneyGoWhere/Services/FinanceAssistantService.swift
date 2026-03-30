@@ -186,43 +186,48 @@ struct FinanceAssistantService {
     }
 
     private func parseAmount(in text: String, defaultCurrencyCode: String) -> MoneyAmount? {
-        let pattern = #"(?:(USD|SGD|EUR|GBP|JPY)\s*)?([$€£¥])?\s?(\d+(?:\.\d{1,2})?)"#
+        let pattern = #"(?:(USD|SGD|EUR|GBP|JPY)\s*)?([$€£¥])?\s?(\d+(?:\.\d{1,2})?)(?!\s*(?:st|nd|rd|th|th\b))"#
         guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
             return nil
         }
-        guard let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)) else {
-            return nil
-        }
-
-        let codeRange = Range(match.range(at: 1), in: text)
-        let symbolRange = Range(match.range(at: 2), in: text)
-        let valueRange = Range(match.range(at: 3), in: text)
-
-        guard let valueRange, let decimal = Decimal(string: String(text[valueRange])) else {
-            return nil
-        }
-
-        let currencyCode: String
-        if let codeRange {
-            currencyCode = String(text[codeRange]).uppercased()
-        } else if let symbolRange {
-            switch String(text[symbolRange]) {
-            case "$":
-                currencyCode = defaultCurrencyCode
-            case "€":
-                currencyCode = "EUR"
-            case "£":
-                currencyCode = "GBP"
-            case "¥":
-                currencyCode = "JPY"
-            default:
+        
+        let range = NSRange(text.startIndex..., in: text)
+        let matches = regex.matches(in: text, range: range)
+        
+        for match in matches {
+            let codeRange = Range(match.range(at: 1), in: text)
+            let symbolRange = Range(match.range(at: 2), in: text)
+            let valueRange = Range(match.range(at: 3), in: text)
+            
+            guard let vRange = valueRange, let decimal = Decimal(string: String(text[vRange])) else { continue }
+            
+            // Heuristic to reject obvious dates without symbols (e.g. "on the 15th" - lookahead handles "th", but plain "15" is tricky)
+            // If it's between 1 and 31 and the string contains "on the [number]", skip it
+            if codeRange == nil && symbolRange == nil && decimal <= 31 {
+                let vString = String(text[vRange])
+                if text.contains("the \(vString)") || text.contains("on \(vString)") {
+                    continue
+                }
+            }
+            
+            let currencyCode: String
+            if let cRange = codeRange {
+                currencyCode = String(text[cRange]).uppercased()
+            } else if let sRange = symbolRange {
+                switch String(text[sRange]) {
+                case "$": currencyCode = defaultCurrencyCode
+                case "€": currencyCode = "EUR"
+                case "£": currencyCode = "GBP"
+                case "¥": currencyCode = "JPY"
+                default: currencyCode = defaultCurrencyCode
+                }
+            } else {
                 currencyCode = defaultCurrencyCode
             }
-        } else {
-            currencyCode = defaultCurrencyCode
+            
+            return MoneyAmount(amount: decimal, currencyCode: currencyCode)
         }
-
-        return MoneyAmount(amount: decimal, currencyCode: currencyCode)
+        return nil
     }
 
     private func parseDate(in text: String, cadence: RecurrenceCadence?) -> Date? {

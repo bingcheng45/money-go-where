@@ -2,6 +2,13 @@
 .claude/
 .omc/
 
+# GSD agent state (runtime/ephemeral files)
+.gsd/STATE.md
+.gsd/runtime/
+.gsd/browser-state/
+.gsd/*.db
+.bg-shell/
+
 # App Store Connect API keys
 keys/
 *.p8
@@ -18,3 +25,30 @@ DerivedData/
 *.ipa
 *.dSYM.zip
 *.dSYM
+
+# ── GSD baseline (auto-generated) ──
+.gsd
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.code-workspace
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+venv/
+target/
+vendor/
+*.log
+coverage/
+.cache/
+tmp/

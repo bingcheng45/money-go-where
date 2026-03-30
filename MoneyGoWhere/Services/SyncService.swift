@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 protocol CloudSyncing {
     func sync(session: PersistedSession) async
 }
