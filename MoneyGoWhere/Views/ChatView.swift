@@ -59,6 +59,7 @@ struct ChatView: View {
                     .focused($composerFocused)
                     .submitLabel(.send)
                     .onSubmit { submitAndDismiss() }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.trailing, 48)
                     sendButton
                 }
@@ -68,6 +69,8 @@ struct ChatView: View {
                         .stroke(Color.separatorDark, lineWidth: 1)
                         .background(Color.bgSurface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 )
+                .contentShape(Rectangle())
+                .onTapGesture { composerFocused = true }
             } else {
                 // Standard layout: text field + icons + send button on separate row
                 VStack(alignment: .leading, spacing: 14) {
@@ -85,6 +88,7 @@ struct ChatView: View {
                     .focused($composerFocused)
                     .submitLabel(.send)
                     .onSubmit { submitAndDismiss() }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                     HStack {
                         HStack(spacing: 8) {
@@ -102,6 +106,8 @@ struct ChatView: View {
                         .stroke(Color.separatorDark, lineWidth: 1)
                         .background(Color.bgSurface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 )
+                .contentShape(Rectangle())
+                .onTapGesture { composerFocused = true }
             }
         }
         .padding(.horizontal, 16)
