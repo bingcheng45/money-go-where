@@ -191,11 +191,11 @@ private struct DraftReviewCard: View {
             Text(draft.readyForConfirmation ? "Ready to save" : "Waiting on more detail")
                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                 .foregroundStyle(draft.readyForConfirmation ? Color.brandGreen : .white)
-            draftRow("Title", value: draft.title ?? "Missing")
-            draftRow("Amount", value: draft.amount?.formatted(localeIdentifier: profile.localeIdentifier) ?? "Missing")
-            draftRow("Cadence", value: draft.cadence?.displayTitle ?? "Missing")
+            draftRow("Title", value: draft.title ?? "Missing", mandatory: true)
+            draftRow("Amount", value: draft.amount?.formatted(localeIdentifier: profile.localeIdentifier) ?? "Missing", mandatory: true)
+            draftRow("Cadence", value: draft.cadence?.displayTitle ?? "Missing", mandatory: true)
             draftRow("Next due", value: draft.nextDueDate?.formattedMonthDay() ?? "Missing")
-            draftRow("Type", value: draft.itemType?.displayTitle ?? "Missing")
+            draftRow("Type", value: draft.itemType?.displayTitle ?? "Missing", mandatory: true)
 
             HStack {
                 Button("Edit") {
@@ -218,11 +218,18 @@ private struct DraftReviewCard: View {
         .background(Color.bgSurface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
-    private func draftRow(_ label: String, value: String) -> some View {
+    private func draftRow(_ label: String, value: String, mandatory: Bool = false) -> some View {
         HStack {
-            Text(label)
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(.white)
+            HStack(spacing: 2) {
+                Text(label)
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white)
+                if mandatory {
+                    Text("*")
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color.destructiveRed)
+                }
+            }
             Spacer()
             Text(value)
                 .font(.system(size: 14, weight: .regular, design: .rounded))

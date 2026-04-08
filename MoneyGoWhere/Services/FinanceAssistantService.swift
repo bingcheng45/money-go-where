@@ -170,7 +170,10 @@ struct FinanceAssistantService {
         if text.contains("yearly") || text.contains("annual") || text.contains("annually") {
             return .yearly
         }
-        if text.contains("monthly") || text.contains("every month") || text.contains("/mo") {
+        // \bmonths?\b covers installment phrasing: "24 month plan", "12-month installment", "a month"
+        // Word-boundary prevents matching typos like "monthy".
+        if text.contains("monthly") || text.contains("every month") || text.contains("/mo")
+            || text.range(of: #"\bmonths?\b"#, options: [.regularExpression, .caseInsensitive]) != nil {
             return .monthly
         }
         return nil
@@ -202,6 +205,12 @@ struct FinanceAssistantService {
         let range = NSRange(text.startIndex..., in: text)
         let matches = regex.matches(in: text, range: range)
 
+        // Prefer currency-prefixed amounts over bare numbers so that
+        // "iphone 24 month installment plan $150" picks $150 not 24.
+        // Rank: explicit code (USD/SGD/…) = 3, symbol ($€£¥) = 2, bare = 1.
+        var bestAmount: MoneyAmount?
+        var bestRank = 0
+
         for match in matches {
             let codeRange = Range(match.range(at: 1), in: text)
             let symbolRange = Range(match.range(at: 2), in: text)
@@ -220,7 +229,15 @@ struct FinanceAssistantService {
                     continue
                 }
             }
-            
+
+            let rank: Int
+            if codeRange != nil { rank = 3 }
+            else if symbolRange != nil { rank = 2 }
+            else { rank = 1 }
+
+            // Only promote; never replace a higher-ranked match with a lower one.
+            guard rank > bestRank else { continue }
+
             let currencyCode: String
             if let cRange = codeRange {
                 currencyCode = String(text[cRange]).uppercased()
@@ -235,10 +252,11 @@ struct FinanceAssistantService {
             } else {
                 currencyCode = defaultCurrencyCode
             }
-            
-            return MoneyAmount(amount: decimal, currencyCode: currencyCode)
+
+            bestRank = rank
+            bestAmount = MoneyAmount(amount: decimal, currencyCode: currencyCode)
         }
-        return nil
+        return bestAmount
     }
 
     private func parseDate(in text: String, cadence: RecurrenceCadence?) -> Date? {
