@@ -26,7 +26,7 @@ test_target = project.new_target(:unit_test_bundle, "MoneyGoWhereTests", :ios, "
         config.build_settings["SWIFT_VERSION"] = "6.0"
         config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "17.0"
         config.build_settings["CODE_SIGN_STYLE"] = "Automatic"
-        config.build_settings["DEVELOPMENT_TEAM"] = ""
+        config.build_settings["DEVELOPMENT_TEAM"] = "8HM7YPNPP3"
         config.build_settings["GENERATE_INFOPLIST_FILE"] = "YES"
         config.build_settings["CLANG_ENABLE_MODULES"] = "YES"
         config.build_settings["SWIFT_EMIT_LOC_STRINGS"] = "NO"
@@ -45,6 +45,7 @@ app_target.build_configurations.each do |config|
     config.build_settings["CURRENT_PROJECT_VERSION"] = "1"
     config.build_settings["MARKETING_VERSION"] = "1.0"
     config.build_settings["ENABLE_PREVIEWS"] = "YES"
+    config.build_settings["CODE_SIGN_ENTITLEMENTS"] = "MoneyGoWhere/MoneyGoWhere.entitlements"
 end
 
 test_target.build_configurations.each do |config|
@@ -59,20 +60,55 @@ project.main_group.set_source_tree("SOURCE_ROOT")
 app_group = project.main_group.new_group("MoneyGoWhere")
 test_group = project.main_group.new_group("MoneyGoWhereTests")
 
+RESOURCE_EXTENSIONS = %w[.lottie .json .png .jpg .jpeg .gif .mp4 .wav .mp3 .ttf .otf].freeze
+
 def add_files(group, root_path, target)
   Dir.glob(File.join(root_path, "**", "*")).sort.each do |path|
     next if File.directory?(path)
+    next if path.include?(".xcassets/")
+    next if File.extname(path).downcase == ".entitlements"
 
     relative_path = Pathname(path).relative_path_from(Pathname(ROOT)).to_s
     file_ref = group.find_file_by_path(relative_path) || group.new_file(relative_path)
-    target.add_file_references([file_ref])
+
+    if RESOURCE_EXTENSIONS.include?(File.extname(path).downcase)
+      target.resources_build_phase.add_file_reference(file_ref, true)
+    else
+      target.add_file_references([file_ref])
+    end
   end
 end
 
 add_files(app_group, APP_SOURCES_PATH, app_target)
 add_files(test_group, TEST_SOURCES_PATH, test_target)
 
+# Add entitlements file to the project group (not a build phase — just for Xcode visibility)
+app_group.new_file("MoneyGoWhere/MoneyGoWhere.entitlements")
+
+# Add asset catalogs (.xcassets are directories — add_files skips them)
+Dir.glob(File.join(APP_SOURCES_PATH, "**", "*.xcassets")).each do |xcassets_path|
+  relative_path = Pathname(xcassets_path).relative_path_from(Pathname(ROOT)).to_s
+  xcassets_ref = app_group.new_file(relative_path)
+  app_target.resources_build_phase.add_file_reference(xcassets_ref, true)
+end
+
 test_target.add_dependency(app_target)
+
+# --- Lottie SPM dependency ---
+lottie_package = project.new(Xcodeproj::Project::Object::XCRemoteSwiftPackageReference)
+lottie_package.repositoryURL = "https://github.com/airbnb/lottie-ios"
+lottie_package.requirement = {
+  "kind" => "upToNextMajorVersion",
+  "minimumVersion" => "4.5.0"
+}
+project.root_object.package_references << lottie_package
+
+lottie_dep = project.new(Xcodeproj::Project::Object::XCSwiftPackageProductDependency)
+lottie_dep.package = lottie_package
+lottie_dep.product_name = "Lottie"
+
+app_target.package_product_dependencies << lottie_dep
+# --- end Lottie ---
 
 # --- RevenueCat SPM dependency ---
 revenuecat_package = project.new(Xcodeproj::Project::Object::XCRemoteSwiftPackageReference)

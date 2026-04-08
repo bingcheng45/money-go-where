@@ -14,6 +14,9 @@ final class AppModel {
     var editorDraft: RecurringItemFormState?
     var editingItemID: UUID?
     var statusBanner: String?
+    var splashHasPlayed = false
+    var isSigningIn = false
+    var authError: String?
 
     let persistence: SessionPersisting
     let subscriptionService: SubscriptionProviding
@@ -30,7 +33,7 @@ final class AppModel {
         persistence: SessionPersisting = LocalJSONPersistence(),
         subscriptionService: SubscriptionProviding = MockSubscriptionService(),
         syncService: CloudSyncing = PlaceholderCloudSyncService(),
-        accountService: AccountProviding = LocalAccountService(),
+        accountService: AccountProviding = AppleAccountService(),
         reminderScheduler: ReminderScheduling = LocalReminderScheduler()
     ) {
         self.persistence = persistence
@@ -52,6 +55,9 @@ final class AppModel {
             session.activeThreadID = thread.id
         }
         saveSession()
+
+        // Async: verify any stored Apple credential is still valid
+        Task { await checkAppleCredentialState() }
     }
 
     var activeThread: ChatThread {
@@ -441,6 +447,39 @@ final class AppModel {
 
     private func itemSource(for itemID: UUID?) -> ItemSource {
         session.recurringItems.first(where: { $0.id == itemID })?.source ?? .manual
+    }
+
+    // MARK: - Sign in with Apple
+
+    /// Returns the Apple-sourced profile on success, nil on cancellation or failure.
+    /// Sets `authError` when sign-in fails so the UI can surface a message.
+    func signInWithApple() async -> UserProfile? {
+        isSigningIn = true
+        authError = nil
+        defer { isSigningIn = false }
+        do {
+            return try await accountService.signInWithApple()
+        } catch AccountError.canceled {
+            return nil
+        } catch {
+            authError = "Sign in failed. Please try again."
+            return nil
+        }
+    }
+
+    /// Checks Apple's credential state on re-launch and resets the profile if revoked.
+    private func checkAppleCredentialState() async {
+        guard let appleUserID = session.profile.appleUserID else { return }
+        let state = await accountService.appleCredentialState(for: appleUserID)
+        switch state {
+        case .revoked, .notFound:
+            session.profile.appleUserID = nil
+            session.profile.displayName = "MoneyGoWhere User"
+            session.profile.email = nil
+            saveSession()
+        case .authorized, .unknown:
+            break
+        }
     }
 
     private func saveSession() {

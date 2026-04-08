@@ -93,6 +93,7 @@ struct UserProfile: Codable, Hashable {
     var id: UUID
     var displayName: String
     var email: String?
+    var appleUserID: String?
     var localeIdentifier: String
     var defaultCurrencyCode: String
     var defaultPaymentMethodLabel: String
@@ -106,7 +107,7 @@ struct UserProfile: Codable, Hashable {
             id: UUID(),
             displayName: "",
             email: nil,
-            localeIdentifier: locale.identifier,
+            localeIdentifier: locale.identifier.isEmpty ? "en_US" : locale.identifier,
             defaultCurrencyCode: currency,
             defaultPaymentMethodLabel: "",
             aggregateLearningConsent: false,
