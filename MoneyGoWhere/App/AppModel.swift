@@ -154,6 +154,13 @@ final class AppModel {
         saveSession()
     }
 
+    /// Clears all chat threads when onboarding restarts (e.g. cold launch before completion).
+    func clearOnboardingChat() {
+        session.chatThreads = []
+        session.activeThreadID = nil
+        saveSession()
+    }
+
     func deleteThread(_ thread: ChatThread) {
         session.chatThreads.removeAll { $0.id == thread.id }
         if session.chatThreads.isEmpty {

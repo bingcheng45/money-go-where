@@ -89,7 +89,7 @@ struct ReminderSettings: Codable, Hashable {
     static let disabled = ReminderSettings(isEnabled: false, daysBefore: 3)
 }
 
-struct UserProfile: Codable, Hashable {
+struct UserProfile: Hashable {
     var id: UUID
     var displayName: String
     var email: String?
@@ -99,6 +99,8 @@ struct UserProfile: Codable, Hashable {
     var defaultPaymentMethodLabel: String
     var aggregateLearningConsent: Bool
     var notificationPermissionStatus: NotificationPermissionStatus
+    // User-defined payment methods appended to the built-in list
+    var customPaymentMethods: [String]
 
     static var empty: UserProfile {
         let locale = Locale.current
@@ -111,8 +113,33 @@ struct UserProfile: Codable, Hashable {
             defaultCurrencyCode: currency,
             defaultPaymentMethodLabel: "",
             aggregateLearningConsent: false,
-            notificationPermissionStatus: .unknown
+            notificationPermissionStatus: .unknown,
+            customPaymentMethods: []
         )
+    }
+}
+
+extension UserProfile: Codable {
+    enum CodingKeys: String, CodingKey {
+        case id, displayName, email, appleUserID, localeIdentifier
+        case defaultCurrencyCode, defaultPaymentMethodLabel
+        case aggregateLearningConsent, notificationPermissionStatus
+        case customPaymentMethods
+    }
+
+    init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        displayName = try c.decode(String.self, forKey: .displayName)
+        email = try c.decodeIfPresent(String.self, forKey: .email)
+        appleUserID = try c.decodeIfPresent(String.self, forKey: .appleUserID)
+        localeIdentifier = try c.decode(String.self, forKey: .localeIdentifier)
+        defaultCurrencyCode = try c.decode(String.self, forKey: .defaultCurrencyCode)
+        defaultPaymentMethodLabel = try c.decode(String.self, forKey: .defaultPaymentMethodLabel)
+        aggregateLearningConsent = try c.decode(Bool.self, forKey: .aggregateLearningConsent)
+        notificationPermissionStatus = try c.decode(NotificationPermissionStatus.self, forKey: .notificationPermissionStatus)
+        // Graceful migration: existing sessions without this key default to empty
+        customPaymentMethods = try c.decodeIfPresent([String].self, forKey: .customPaymentMethods) ?? []
     }
 }
 

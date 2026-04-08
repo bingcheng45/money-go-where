@@ -6,14 +6,23 @@ struct RootView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
+            // Persistent dark base prevents white flash during any transition
+            Color.bgBase.ignoresSafeArea()
+
             Group {
                 if model.session.hasCompletedOnboarding {
                     MainShellView(model: model)
-                } else {
+                } else if model.splashHasPlayed {
                     OnboardingFlowView(model: model)
+                        .transition(.move(edge: .trailing))
+                } else {
+                    SplashScreenView {
+                        model.splashHasPlayed = true
+                    }
+                    .transition(.opacity)
                 }
             }
-            .background(Color(.systemGroupedBackground))
+            .animation(.easeInOut(duration: 0.45), value: model.splashHasPlayed)
 
             if let banner = model.statusBanner {
                 Text(banner)

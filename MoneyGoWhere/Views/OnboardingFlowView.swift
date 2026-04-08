@@ -6,14 +6,14 @@ struct OnboardingFlowView: View {
     @State private var stepIndex = 0
     @State private var isNavigating = false
     @State private var goingForward = true
-    @State private var introItemsVisible: [Bool] = Array(repeating: false, count: 4)
     @State private var profile = UserProfile.empty
     @State private var firstItem = RecurringItemFormState.blank(defaultCurrencyCode: UserProfile.empty.defaultCurrencyCode, paymentMethod: "")
     @State private var selectedPaywallPlan: SubscriptionPlan = .yearly
     @State private var paywallOfferings: [SubscriptionOffering] = []
     @FocusState private var focusedField: String?
+    @State private var showingAddPaymentMethod = false
+    @State private var newPaymentMethodText = ""
 
-    private let supportedCurrencies = ["USD", "SGD", "EUR", "GBP", "JPY"]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -39,16 +39,29 @@ struct OnboardingFlowView: View {
             .padding(.horizontal, 16)
             .padding(.top, 12)
 
-            ScrollView {
-                currentStep
+            if stepIndex == 3 {
+                // Chat step: no scroll wrapper — ChatView fills remaining space with its own scroll
+                chatLoggingStep
                     .padding(.horizontal, 24)
                     .padding(.top, 24)
-                    .padding(.bottom, 16)
                     .transition(.asymmetric(
                         insertion: .move(edge: goingForward ? .trailing : .leading),
                         removal: .move(edge: goingForward ? .leading : .trailing)
                     ))
                     .id(stepIndex)
+            } else {
+                ScrollView {
+                    currentStep
+                        .padding(.horizontal, 24)
+                        .padding(.top, 24)
+                        .padding(.bottom, 16)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: goingForward ? .trailing : .leading),
+                            removal: .move(edge: goingForward ? .leading : .trailing)
+                        ))
+                        .id(stepIndex)
+                }
+                .scrollDismissesKeyboard(.interactively)
             }
 
             brandControls
@@ -58,6 +71,8 @@ struct OnboardingFlowView: View {
         }
         .background(Color.bgBase.ignoresSafeArea())
         .onAppear {
+            // Discard any chat messages from a previous incomplete onboarding session
+            model.clearOnboardingChat()
             if profile.displayName.isEmpty {
                 // Copy locale/currency/identity from the session — but NOT name or email,
                 // which the user must fill in themselves.
@@ -99,9 +114,9 @@ struct OnboardingFlowView: View {
     private var currentStep: some View {
         switch stepIndex {
         case 0: authStep
-        case 1: introStep
-        case 2: profileStep
-        case 3: preferencesStep
+        case 1: profileStep
+        case 2: preferencesStep
+        case 3: chatLoggingStep
         case 4: firstItemStep
         case 5: previewStep
         default: paywallStep
@@ -215,82 +230,16 @@ struct OnboardingFlowView: View {
         continueFlow()
     }
 
-    // MARK: - Step 1: Intro
+    // MARK: - Step 3: Chat Logging
 
-    private var introStep: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("MoneyGoWhere")
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                Text("Know where every dollar goes. Before it's gone.")
-                    .font(.system(size: 16, weight: .regular, design: .rounded))
-                    .foregroundStyle(Color.textSecondary)
-            }
-            .opacity(introItemsVisible[0] ? 1 : 0)
-            .offset(y: introItemsVisible[0] ? 0 : -16)
-
-            VStack(spacing: 12) {
-                introRow(
-                    title: "Chat-first logging",
-                    subtitle: "Say \"ChatGPT plus 20 dollars monthly\" and the app turns it into a structured item.",
-                    symbol: "message.fill"
-                )
-                .opacity(introItemsVisible[1] ? 1 : 0)
-                .offset(y: introItemsVisible[1] ? 0 : -16)
-
-                introRow(
-                    title: "Calendar-led dashboard",
-                    subtitle: "See when income lands, when bills hit, and how the month nets out.",
-                    symbol: "calendar"
-                )
-                .opacity(introItemsVisible[2] ? 1 : 0)
-                .offset(y: introItemsVisible[2] ? 0 : -16)
-
-                introRow(
-                    title: "Memory-aware reminders",
-                    subtitle: "Persist pay dates, billing schedules and payment methods so the app gets faster over time.",
-                    symbol: "bell.fill"
-                )
-                .opacity(introItemsVisible[3] ? 1 : 0)
-                .offset(y: introItemsVisible[3] ? 0 : -16)
-            }
+    private var chatLoggingStep: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            stepHeading("Chat Logging", subtitle: "Add items simply by typing in the chat!")
+            ChatView(model: model, hideMediaControls: true)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
-        .onAppear {
-            for index in 0 ..< 4 {
-                let delay = Double(index) * 0.12
-                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                    withAnimation(.easeOut(duration: 0.4)) {
-                        introItemsVisible[index] = true
-                    }
-                }
-            }
-        }
-    }
-
-    private func introRow(title: String, subtitle: String, symbol: String) -> some View {
-        HStack(alignment: .center, spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(Color.brandGreen.opacity(0.18))
-                    .frame(width: 44, height: 44)
-                Image(systemName: symbol)
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color.brandGreen)
-            }
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
-                Text(subtitle)
-                    .font(.system(size: 13, weight: .regular, design: .rounded))
-                    .foregroundStyle(Color.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.bgSurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .frame(maxHeight: .infinity)
     }
 
     // MARK: - Step 1: Profile
@@ -331,37 +280,108 @@ struct OnboardingFlowView: View {
                 // Locale is auto-detected from Locale.current (device Language & Region setting)
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("DEFAULT CURRENCY")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color.textSecondary)
-                Picker("Default currency", selection: $profile.defaultCurrencyCode) {
-                    ForEach(supportedCurrencies, id: \.self) { currency in
-                        Text(currency).tag(currency)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .tint(Color.brandGreen)
-            }
         }
     }
 
-    // MARK: - Step 2: Preferences
+    // MARK: - Step 3: Preferences
 
     private var preferencesStep: some View {
         VStack(alignment: .leading, spacing: 20) {
             stepHeading("A few preferences", subtitle: "You can change these any time in settings.")
 
             VStack(spacing: 12) {
-                brandField("Default payment method (optional)", text: $profile.defaultPaymentMethodLabel)
-                    .textInputAutocapitalization(.words)
+                // Default currency
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("DEFAULT CURRENCY")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color.textSecondary)
+                    Menu {
+                        ForEach(CurrencyInfo.all) { info in
+                            Button(info.displayLabel) {
+                                profile.defaultCurrencyCode = info.code
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Text(CurrencyInfo.find(profile.defaultCurrencyCode)?.displayLabel ?? profile.defaultCurrencyCode)
+                                .font(.system(size: 17, weight: .regular, design: .rounded))
+                                .foregroundStyle(Color.brandGreen)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(Color.brandGreen)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(Color.bgSurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
 
+                // Default payment method
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("DEFAULT PAYMENT METHOD")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color.textSecondary)
+                    Menu {
+                        ForEach(PaymentMethodOption.all + profile.customPaymentMethods, id: \.self) { method in
+                            Button(PaymentMethodOption.displayName(for: method)) {
+                                profile.defaultPaymentMethodLabel = method
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Text(PaymentMethodOption.displayName(for: profile.defaultPaymentMethodLabel))
+                                .font(.system(size: 17, weight: .regular, design: .rounded))
+                                .foregroundStyle(Color.brandGreen)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(Color.brandGreen)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(Color.bgSurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        showingAddPaymentMethod = true
+                    } label: {
+                        Label("Add custom method", systemImage: "plus.circle")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color.brandGreen)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.leading, 4)
+                    .alert("Add Payment Method", isPresented: $showingAddPaymentMethod) {
+                        TextField("e.g. DBS PayLah", text: $newPaymentMethodText)
+                        Button("Add") {
+                            let trimmed = newPaymentMethodText.trimmingCharacters(in: .whitespacesAndNewlines)
+                            let allExisting = (PaymentMethodOption.all + profile.customPaymentMethods)
+                                .map { $0.lowercased() }
+                            guard !trimmed.isEmpty,
+                                  !allExisting.contains(trimmed.lowercased()) else {
+                                newPaymentMethodText = ""
+                                return
+                            }
+                            profile.customPaymentMethods.append(trimmed)
+                            profile.defaultPaymentMethodLabel = trimmed
+                            newPaymentMethodText = ""
+                        }
+                        Button("Cancel", role: .cancel) { newPaymentMethodText = "" }
+                    } message: {
+                        Text("Your custom method will be saved to your profile.")
+                    }
+                }
+
+                // Aggregate learning consent
                 VStack(alignment: .leading, spacing: 10) {
-                    Toggle("Help improve catalog defaults", isOn: $profile.aggregateLearningConsent)
+                    Toggle("Help improve suggestions", isOn: $profile.aggregateLearningConsent)
                         .font(.system(size: 17, weight: .regular, design: .rounded))
                         .foregroundStyle(.white)
                         .tint(Color.brandGreen)
-                    Text("Aggregate learning improves catalog defaults, popularity rankings, and autofill confidence without training on raw user chats.")
+                    Text("Helps improve suggestions and autofill for everyone. No raw data is shared.")
                         .font(.system(size: 13, weight: .regular, design: .rounded))
                         .foregroundStyle(Color.textSecondary)
                 }
@@ -389,8 +409,8 @@ struct OnboardingFlowView: View {
                         brandField("Amount", text: $firstItem.amountText, isValid: !firstItem.amountText.isEmpty)
                             .keyboardType(.decimalPad)
                         Picker("Currency", selection: $firstItem.currencyCode) {
-                            ForEach(supportedCurrencies, id: \.self) { currency in
-                                Text(currency).tag(currency)
+                            ForEach(CurrencyInfo.all) { info in
+                                Text(info.code).tag(info.code)
                             }
                         }
                         .frame(maxWidth: 110)
@@ -632,6 +652,7 @@ struct OnboardingFlowView: View {
             .font(.system(size: 17, weight: .regular, design: .rounded))
             .foregroundStyle(.white)
             .tint(Color.accentBlue)
+            .frame(maxWidth: .infinity, alignment: .leading)
             if isValid {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 18, weight: .regular, design: .rounded))
@@ -641,6 +662,7 @@ struct OnboardingFlowView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .background(Color.bgSurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .contentShape(Rectangle())
     }
 
     // MARK: - Logic (unchanged)
@@ -657,10 +679,9 @@ struct OnboardingFlowView: View {
 
     private var canContinue: Bool {
         switch stepIndex {
-        case 0, 1, 3: true
-        case 2:
+        case 0, 2, 3: true
+        case 1:
             isValidDisplayName
-                && !profile.defaultCurrencyCode.isEmpty
                 && (profile.email == nil || profile.email.map { isValidEmail($0) } ?? true)
         case 4, 5: buildFirstItem() != nil
         default: true

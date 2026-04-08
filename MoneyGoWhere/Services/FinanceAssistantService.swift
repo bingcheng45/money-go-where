@@ -14,7 +14,7 @@ struct FinanceAssistantService {
         profile: UserProfile,
         memories: [FinanceMemory]
     ) -> AssistantTurn {
-        let mergedDraft = merge(parse(text: text, profile: profile), into: existingDraft, sourceText: text, profile: profile, memories: memories)
+        let mergedDraft = merge(parse(text: text, profile: profile, existingTitle: existingDraft?.title), into: existingDraft, sourceText: text, profile: profile, memories: memories)
         let missingFields = validate(mergedDraft)
         var finalDraft = mergedDraft
         finalDraft.missingFields = missingFields
@@ -38,7 +38,7 @@ struct FinanceAssistantService {
         )
     }
 
-    private func parse(text: String, profile: UserProfile) -> ExtractionDraft {
+    private func parse(text: String, profile: UserProfile, existingTitle: String? = nil) -> ExtractionDraft {
         var draft = ExtractionDraft.empty()
         draft.sourceText = text
         let lowercase = text.lowercased()
@@ -73,11 +73,14 @@ struct FinanceAssistantService {
 
         if let itemType = parseItemType(in: lowercase) {
             draft.itemType = itemType
-        } else if draft.itemType == nil {
-            draft.itemType = .expense
         }
+        // Note: .expense default is NOT set here — it is applied only for brand-new items
+        // in merge(), so that multi-turn replies don't overwrite an existing income type.
 
-        if draft.title == nil {
+        // Only infer a title heuristically when no title exists yet (first turn or draft has no title).
+        // Skipping when existingTitle is set prevents noise replies like "ok" / "28" from
+        // overwriting an already-established title on subsequent turns.
+        if draft.title == nil, existingTitle == nil {
             draft.title = inferTitle(from: text)
         }
 
@@ -109,6 +112,8 @@ struct FinanceAssistantService {
     ) -> ExtractionDraft {
         guard var merged = existingDraft else {
             var fresh = update
+            // Apply .expense default only for brand-new items (no prior draft).
+            if fresh.itemType == nil { fresh.itemType = .expense }
             fresh.homeAmount = update.amount.map { MoneyAmount(amount: $0.amount, currencyCode: profile.defaultCurrencyCode) }
             return fresh
         }
@@ -186,26 +191,32 @@ struct FinanceAssistantService {
     }
 
     private func parseAmount(in text: String, defaultCurrencyCode: String) -> MoneyAmount? {
-        let pattern = #"(?:(USD|SGD|EUR|GBP|JPY)\s*)?([$€£¥])?\s?(\d+(?:\.\d{1,2})?)(?!\s*(?:st|nd|rd|th|th\b))"#
+        // (?:\d*) after the capture group consumes any extra decimal digits (e.g. "$15.999" → captures
+        // "15.99" then consumes the trailing "9"), preventing backtracking to a shorter match.
+        // (?!\d) then ensures we haven't left a digit unconsumed (guards against matching "2" from "28").
+        let pattern = #"(?:(USD|SGD|EUR|GBP|JPY)\s*)?([$€£¥])?\s?(\d+(?:\.\d{1,2})?)(?:\d*)(?!\d)(?!\s*(?:st|nd|rd|th|th\b))"#
         guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
             return nil
         }
-        
+
         let range = NSRange(text.startIndex..., in: text)
         let matches = regex.matches(in: text, range: range)
-        
+
         for match in matches {
             let codeRange = Range(match.range(at: 1), in: text)
             let symbolRange = Range(match.range(at: 2), in: text)
             let valueRange = Range(match.range(at: 3), in: text)
-            
+
             guard let vRange = valueRange, let decimal = Decimal(string: String(text[vRange])) else { continue }
-            
-            // Heuristic to reject obvious dates without symbols (e.g. "on the 15th" - lookahead handles "th", but plain "15" is tricky)
-            // If it's between 1 and 31 and the string contains "on the [number]", skip it
+
+            // Reject numbers ≤ 31 that look like date responses:
+            // - "on the 15" / "the 15"
+            // - bare number alone (e.g. user replying "28" to a date prompt)
             if codeRange == nil && symbolRange == nil && decimal <= 31 {
                 let vString = String(text[vRange])
-                if text.contains("the \(vString)") || text.contains("on \(vString)") {
+                let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                if text.contains("the \(vString)") || text.contains("on \(vString)")
+                    || trimmed == vString {
                     continue
                 }
             }
@@ -231,10 +242,40 @@ struct FinanceAssistantService {
     }
 
     private func parseDate(in text: String, cadence: RecurrenceCadence?) -> Date? {
+        // 1. Bare integer 1–31: user is replying with just a day number (e.g. "28")
+        //    Check this first so it takes priority over NSDataDetector.
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let dayNumber = Int(trimmed), dayNumber >= 1, dayNumber <= 31 {
+            return inferredRecurringDate(day: dayNumber, cadence: cadence ?? .monthly)
+        }
+
+        // 2. NSDataDetector for natural-language dates ("April 13", "next Monday", etc.)
+        //    Guards against two phantom-date patterns:
+        //    a) Bare weekday abbreviation ("mon"/"tue") — no digit in matched text → skip.
+        //    b) Time-like number + weekday abbreviation ("500 a mon" → NSDataDetector reads
+        //       "500" as 5:00 and "mon" as Monday). Detect this by checking whether the
+        //       matched text contains a weekday abbreviation with no month name or ordinal.
         if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue) {
             let range = NSRange(text.startIndex..., in: text)
-            if let match = detector.firstMatch(in: text, range: range), let date = match.date {
-                return Calendar.current.startOfDay(for: date)
+            if let match = detector.firstMatch(in: text, range: range),
+               let date = match.date,
+               let matchedRange = Range(match.range, in: text) {
+                let matchedLower = String(text[matchedRange]).lowercased()
+                let hasDigit = matchedLower.contains(where: \.isNumber)
+                let tokens = matchedLower
+                    .components(separatedBy: .whitespacesAndNewlines)
+                    .filter { !$0.isEmpty }
+                let weekdays: Set<String> = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+                let months: Set<String> = ["jan", "feb", "mar", "apr", "may", "jun",
+                                           "jul", "aug", "sep", "oct", "nov", "dec"]
+                let hasWeekday = tokens.contains { weekdays.contains($0) }
+                let hasMonth = tokens.contains { months.contains(String($0.prefix(3))) }
+                let hasOrdinal = matchedLower.range(of: #"\d{1,2}(?:st|nd|rd|th)"#,
+                                                    options: .regularExpression) != nil
+                // Accept only when: digit present AND not a weekday-only context
+                if hasDigit && (hasMonth || hasOrdinal || !hasWeekday) {
+                    return Calendar.current.startOfDay(for: date)
+                }
             }
         }
 
@@ -246,6 +287,7 @@ struct FinanceAssistantService {
             return Calendar.current.startOfDay(for: tomorrow)
         }
 
+        // 3. Ordinal pattern: "28th", "1st", "3rd"
         let ordinalPattern = #"(\d{1,2})(?:st|nd|rd|th)"#
         if let regex = try? NSRegularExpression(pattern: ordinalPattern),
            let match = regex.firstMatch(in: lowercase, range: NSRange(lowercase.startIndex..., in: lowercase)),
@@ -294,7 +336,12 @@ struct FinanceAssistantService {
             return nil
         }
 
-        return cleaned.split(separator: " ").prefix(3).joined(separator: " ").capitalized
+        let result = cleaned.split(separator: " ").prefix(3).joined(separator: " ").capitalized
+        // Don't use a purely numeric string as a title — it's almost certainly a date response
+        guard !result.allSatisfy({ $0.isNumber || $0.isWhitespace }) else {
+            return nil
+        }
+        return result
     }
 }
 
