@@ -71,6 +71,10 @@ struct FinanceAssistantService {
             draft.nextDueDate = dueDate
         }
 
+        if let endDate = parseInstallmentEndDate(in: text, cadence: draft.cadence, nextDueDate: draft.nextDueDate) {
+            draft.endDate = endDate
+        }
+
         if let itemType = parseItemType(in: lowercase) {
             draft.itemType = itemType
         }
@@ -126,6 +130,10 @@ struct FinanceAssistantService {
         merged.amount = update.amount ?? merged.amount
         merged.cadence = update.cadence ?? merged.cadence
         merged.nextDueDate = update.nextDueDate ?? merged.nextDueDate
+        merged.endDate = update.endDate ?? merged.endDate
+        if merged.endDate == nil, let nextDue = merged.nextDueDate {
+            merged.endDate = parseInstallmentEndDate(in: sourceText, cadence: merged.cadence, nextDueDate: nextDue)
+        }
         merged.itemType = update.itemType ?? merged.itemType
         if let paymentMethodLabel = update.paymentMethodLabel, !paymentMethodLabel.isEmpty {
             merged.paymentMethodLabel = paymentMethodLabel
@@ -161,22 +169,35 @@ struct FinanceAssistantService {
     }
 
     private func parseCadence(in text: String) -> RecurrenceCadence? {
-        if text.contains("daily") || text.contains("every day") {
+        if text.contains("daily") || text.contains("every day") || text.contains("/d") || text.contains("/day") {
             return .daily
         }
-        if text.contains("weekly") || text.contains("every week") {
+        if text.contains("weekly") || text.contains("every week") || text.contains("/w") || text.contains("/wk") || text.contains("/week") {
             return .weekly
         }
-        if text.contains("yearly") || text.contains("annual") || text.contains("annually") {
+        if text.contains("yearly") || text.contains("annual") || text.contains("annually")
+            || text.contains("/y") || text.contains("/yr") || text.contains("/year") {
             return .yearly
         }
         // \bmonths?\b covers installment phrasing: "24 month plan", "12-month installment", "a month"
         // Word-boundary prevents matching typos like "monthy".
-        if text.contains("monthly") || text.contains("every month") || text.contains("/mo")
+        if text.contains("monthly") || text.contains("every month") || text.contains("/mo") || text.contains("/m")
             || text.range(of: #"\bmonths?\b"#, options: [.regularExpression, .caseInsensitive]) != nil {
             return .monthly
         }
         return nil
+    }
+
+    private func parseInstallmentEndDate(in text: String, cadence: RecurrenceCadence?, nextDueDate: Date?) -> Date? {
+        guard cadence == .monthly, let startDate = nextDueDate else { return nil }
+        let pattern = #"(\d+)[ -]months?\b"#
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
+              let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+              let range = Range(match.range(at: 1), in: text),
+              let count = Int(text[range]),
+              count > 1
+        else { return nil }
+        return Calendar.current.date(byAdding: .month, value: count - 1, to: startDate)
     }
 
     private func parseItemType(in text: String) -> RecurringItemType? {
@@ -220,14 +241,18 @@ struct FinanceAssistantService {
 
             // Reject numbers ≤ 31 that look like date responses:
             // - "on the 15" / "the 15"
+            // - "due 16" / "next due 16" / "due on 16" (date-context keywords)
             // - bare number alone (e.g. user replying "28" to a date prompt)
             if codeRange == nil && symbolRange == nil && decimal <= 31 {
                 let vString = String(text[vRange])
                 let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                if text.contains("the \(vString)") || text.contains("on \(vString)")
-                    || trimmed == vString {
-                    continue
-                }
+                let lower = text.lowercased()
+                let isDateContext = text.contains("the \(vString)")
+                    || text.contains("on \(vString)")
+                    || lower.contains("due \(vString)")
+                    || lower.contains("due on \(vString)")
+                    || trimmed == vString
+                if isDateContext { continue }
             }
 
             let rank: Int
@@ -265,6 +290,16 @@ struct FinanceAssistantService {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if let dayNumber = Int(trimmed), dayNumber >= 1, dayNumber <= 31 {
             return inferredRecurringDate(day: dayNumber, cadence: cadence ?? .monthly)
+        }
+
+        // 1b. Due-date context: "due 16", "next due 16", "due on 16", "next due on 16"
+        //     Matches a day number that follows date-scheduling keywords.
+        let dueDatePattern = #"(?:next\s+)?due\s+(?:on\s+)?(\d{1,2})\b"#
+        if let regex = try? NSRegularExpression(pattern: dueDatePattern, options: .caseInsensitive),
+           let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+           let dayRange = Range(match.range(at: 1), in: text),
+           let day = Int(text[dayRange]), day >= 1, day <= 31 {
+            return inferredRecurringDate(day: day, cadence: cadence ?? .monthly)
         }
 
         // 2. NSDataDetector for natural-language dates ("April 13", "next Monday", etc.)
@@ -326,13 +361,22 @@ struct FinanceAssistantService {
         case .weekly:
             return today
         case .monthly, .yearly:
+            func clampDay(_ d: Int, in refDate: Date) -> Int {
+                let maxDay = calendar.range(of: .day, in: .month, for: refDate)?.count ?? 31
+                return min(d, maxDay)
+            }
             var components = calendar.dateComponents([.year, .month], from: today)
-            components.day = day
+            components.day = clampDay(day, in: today)
             let thisMonth = calendar.date(from: components)
             if let thisMonth, thisMonth >= today {
                 return thisMonth
             }
-            return calendar.date(byAdding: .month, value: 1, to: thisMonth ?? today)
+            if let nextMonthRef = calendar.date(byAdding: .month, value: 1, to: today) {
+                var next = calendar.dateComponents([.year, .month], from: nextMonthRef)
+                next.day = clampDay(day, in: nextMonthRef)
+                return calendar.date(from: next)
+            }
+            return nil
         }
     }
 
@@ -346,6 +390,7 @@ struct FinanceAssistantService {
 
         let cleaned = text
             .replacingOccurrences(of: #"[$€£¥]"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"\b\d{1,2}(?:st|nd|rd|th)\b"#, with: "", options: [.regularExpression, .caseInsensitive])
             .replacingOccurrences(of: #"\b(daily|weekly|monthly|yearly|income|expense|subscription|bill|cost|salary|on|the|every)\b"#, with: "", options: [.regularExpression, .caseInsensitive])
             .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)

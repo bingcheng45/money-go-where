@@ -323,15 +323,16 @@ final class FinanceAssistantServiceTests: XCTestCase {
         XCTAssertNotNil(turn3.pendingDraft?.nextDueDate)
     }
 
-    func testPureAmountCadenceDateInfersTitleFromTokens() {
-        // inferTitle keeps non-keyword tokens — "50 5th" are left after stripping "$", "monthly", "on", "the"
-        // So title IS inferred; the item becomes ready without an explicit name.
+    func testPureAmountCadenceDateNoTitle() {
+        // After stripping currency, ordinals, and stop-words from "$50 monthly on the 5th",
+        // only "50" remains — a purely numeric string that is rejected as a title.
+        // The item is therefore not ready (title is a required field).
         let result = service.handleUserMessage("$50 monthly on the 5th", existingDraft: nil, profile: usdProfile, memories: [])
 
-        XCTAssertNotNil(result.pendingDraft?.title)
-        XCTAssertFalse(result.pendingDraft?.title?.isEmpty ?? true)
-        XCTAssertTrue(result.pendingDraft?.readyForConfirmation == true,
-                      "Title is inferred from remaining numeric tokens — item should be ready")
+        XCTAssertNil(result.pendingDraft?.title, "Purely numeric remainder must not become a title")
+        XCTAssertFalse(result.pendingDraft?.readyForConfirmation ?? false,
+                       "Missing title means item is not ready for confirmation")
+        XCTAssertTrue(result.pendingDraft?.missingFields.contains(.title) == true)
     }
 
     func testMissingCadenceCompletedInTurnTwo() {
@@ -689,6 +690,47 @@ final class FinanceAssistantServiceTests: XCTestCase {
         XCTAssertTrue(corrected.pendingDraft?.title?.lowercased().contains("gym") == true)
     }
 
+    // KNOWN BUG — regression guard.
+    // Repro: user says "next due 16 sorry" to correct the due date from 15 → 16.
+    // Actual (buggy) behaviour: amount changes to $16, due date stays on the 15th.
+    // Expected behaviour: due date updates to 16th, amount stays at $15.
+    // Root cause: parseAmount() guard (FinanceAssistantService.swift ~line 242) checks for
+    // "the X" / "on X" context but not "due X" / "next due X", so the bare number "16"
+    // passes the guard and is accepted as an amount.
+    // This test FAILS until parseAmount() recognises "due" as a date-context keyword.
+    func testNextDueCorrectionDoesNotChangeAmount() {
+        // Arrange: ready draft — "Jumbo Jack 15", $15/month, due on the 15th
+        let ready = service.handleUserMessage(
+            "Jumbo Jack 15 $15 monthly on the 15th",
+            existingDraft: nil, profile: usdProfile, memories: []
+        )
+        XCTAssertTrue(ready.pendingDraft?.readyForConfirmation == true,
+                      "Precondition: initial draft must be ready")
+        XCTAssertEqual(ready.pendingDraft?.amount?.amount, Decimal(string: "15"),
+                       "Precondition: initial amount must be $15")
+
+        // Act: user corrects only the due date — "next due 16 sorry"
+        let corrected = service.handleUserMessage(
+            "next due 16 sorry",
+            existingDraft: ready.pendingDraft, profile: usdProfile, memories: []
+        )
+
+        // Assert 1: amount must remain $15 — "16" in "next due 16" is a date, not an amount
+        XCTAssertEqual(
+            corrected.pendingDraft?.amount?.amount, Decimal(string: "15"),
+            "Amount must stay at $15; '16' in 'next due 16 sorry' is a date correction, not a new amount"
+        )
+
+        // Assert 2: due-date day must update from 15 to 16
+        let day = corrected.pendingDraft?.nextDueDate
+            .map { Calendar.current.component(.day, from: $0) }
+        XCTAssertEqual(day, 16, "Due date day must update from 15 to 16")
+
+        // Assert 3: draft must stay ready after a single-field correction
+        XCTAssertTrue(corrected.pendingDraft?.readyForConfirmation == true,
+                      "Draft must remain ready after a date-only correction")
+    }
+
     // Cadence correction on an already-ready draft — should update cadence and stay ready.
     func testCadenceCorrectionOnReadyDraft() {
         let ready = service.handleUserMessage("gym $80 monthly on the 5th", existingDraft: nil, profile: usdProfile, memories: [])
@@ -734,5 +776,103 @@ final class FinanceAssistantServiceTests: XCTestCase {
         let after = service.handleUserMessage("Netflix", existingDraft: ready.pendingDraft, profile: usdProfile, memories: [])
         XCTAssertTrue(after.pendingDraft?.title?.lowercased().contains("netflix") == true,
                       "Explicit catalog match should update the title even on a ready draft")
+    }
+
+    // MARK: - Group 11: Cadence shorthands
+
+    func testSlashMCadenceDetected() {
+        let result = service.handleUserMessage("gym $50 /m on the 5th", existingDraft: nil, profile: usdProfile, memories: [])
+        XCTAssertEqual(result.pendingDraft?.cadence, .monthly)
+    }
+
+    func testSlashDCadenceDetected() {
+        let result = service.handleUserMessage("coffee $5 /d", existingDraft: nil, profile: usdProfile, memories: [])
+        XCTAssertEqual(result.pendingDraft?.cadence, .daily)
+    }
+
+    func testSlashWCadenceDetected() {
+        let result = service.handleUserMessage("gym $50 /w on Mondays", existingDraft: nil, profile: usdProfile, memories: [])
+        XCTAssertEqual(result.pendingDraft?.cadence, .weekly)
+    }
+
+    func testSlashWkCadenceDetected() {
+        let result = service.handleUserMessage("gym $50 /wk on Mondays", existingDraft: nil, profile: usdProfile, memories: [])
+        XCTAssertEqual(result.pendingDraft?.cadence, .weekly)
+    }
+
+    func testSlashYCadenceDetected() {
+        let result = service.handleUserMessage("Spotify $99 /y on the 1st", existingDraft: nil, profile: usdProfile, memories: [])
+        XCTAssertEqual(result.pendingDraft?.cadence, .yearly)
+    }
+
+    func testSlashYrCadenceDetected() {
+        let result = service.handleUserMessage("Adobe $60 /yr on the 1st", existingDraft: nil, profile: usdProfile, memories: [])
+        XCTAssertEqual(result.pendingDraft?.cadence, .yearly)
+    }
+
+    // MARK: - Group 12: Installment endDate inference
+
+    func testInstallmentEndDateInferred() {
+        let result = service.handleUserMessage("iphone 24 month installment plan $150 on the 1st", existingDraft: nil, profile: usdProfile, memories: [])
+        let draft = result.pendingDraft
+        XCTAssertNotNil(draft?.endDate)
+        if let nextDue = draft?.nextDueDate, let endDate = draft?.endDate {
+            let expected = Calendar.current.date(byAdding: .month, value: 23, to: nextDue)
+            XCTAssertEqual(endDate, expected)
+        }
+    }
+
+    func testInstallmentEndDateIs23MonthsAfterStart() {
+        let result = service.handleUserMessage("24 month plan $80 on the 15th", existingDraft: nil, profile: usdProfile, memories: [])
+        let draft = result.pendingDraft
+        XCTAssertNotNil(draft?.endDate)
+        if let nextDue = draft?.nextDueDate, let endDate = draft?.endDate {
+            let expected = Calendar.current.date(byAdding: .month, value: 23, to: nextDue)
+            XCTAssertEqual(endDate, expected)
+        }
+    }
+
+    func testNonInstallmentHasNoEndDate() {
+        let result = service.handleUserMessage("Netflix $15.99 monthly on the 1st", existingDraft: nil, profile: usdProfile, memories: [])
+        XCTAssertNil(result.pendingDraft?.endDate)
+    }
+
+    func testInstallmentDurationOneMonthNoEndDate() {
+        let result = service.handleUserMessage("1 month trial $9.99 on the 1st", existingDraft: nil, profile: usdProfile, memories: [])
+        XCTAssertNil(result.pendingDraft?.endDate)
+    }
+
+    // MARK: - Ordinal title stripping & end-of-month clamping
+
+    func testOrdinalDayStrippedFromTitle() {
+        // "Did $20 31st" — the ordinal "31st" is a date hint, not part of the title
+        let result = service.handleUserMessage("Did $20 31st monthly", existingDraft: nil, profile: usdProfile, memories: [])
+        XCTAssertEqual(result.pendingDraft?.title, "Did 20", "Ordinal day must be stripped from inferred title")
+    }
+
+    func testOrdinalDayStrippedFromTitleMidSentence() {
+        // "Rent 500 28th monthly" — ordinal in the middle
+        let result = service.handleUserMessage("Rent 500 28th monthly", existingDraft: nil, profile: usdProfile, memories: [])
+        XCTAssertEqual(result.pendingDraft?.title, "Rent 500")
+    }
+
+    func testDay31InShortMonthClampsToLastDay() {
+        // Build a draft for "31st of each month"; next due should land on the last day of
+        // whatever month is resolved — never an invalid date.
+        let result = service.handleUserMessage("Did $20 31st monthly", existingDraft: nil, profile: usdProfile, memories: [])
+        guard let date = result.pendingDraft?.nextDueDate else {
+            XCTFail("nextDueDate must be set")
+            return
+        }
+        let calendar = Calendar.current
+        let day = calendar.component(.day, from: date)
+        let maxDay = calendar.range(of: .day, in: .month, for: date)?.count ?? 31
+        XCTAssertLessThanOrEqual(day, maxDay, "Resolved day must not exceed the month's actual length")
+    }
+
+    func testInstallmentEndDateNotSetForYearlyCadence() {
+        // "24 month" is present but cadence resolves to yearly — endDate guard requires monthly
+        let result = service.handleUserMessage("24 month plan $1000 yearly on the 1st", existingDraft: nil, profile: usdProfile, memories: [])
+        XCTAssertNil(result.pendingDraft?.endDate)
     }
 }

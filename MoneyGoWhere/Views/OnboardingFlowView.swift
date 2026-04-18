@@ -13,6 +13,7 @@ struct OnboardingFlowView: View {
     @FocusState private var focusedField: String?
     @State private var showingAddPaymentMethod = false
     @State private var newPaymentMethodText = ""
+    @State private var chatStepConfirmed = false
 
 
     var body: some View {
@@ -39,10 +40,9 @@ struct OnboardingFlowView: View {
             .padding(.horizontal, 16)
             .padding(.top, 12)
 
-            if stepIndex == 3 {
-                // Chat step: no scroll wrapper — ChatView fills remaining space with its own scroll
-                chatLoggingStep
-                    .padding(.horizontal, 24)
+            if stepIndex == 3 || stepIndex == 4 {
+                // Steps that manage their own layout — no scroll wrapper or shared bottom controls
+                currentStep
                     .padding(.top, 24)
                     .transition(.asymmetric(
                         insertion: .move(edge: goingForward ? .trailing : .leading),
@@ -101,7 +101,7 @@ struct OnboardingFlowView: View {
                     .frame(height: 6)
                 Capsule()
                     .fill(Color.brandGreen)
-                    .frame(width: geo.size.width * CGFloat(stepIndex + 1) / 7.0, height: 6)
+                    .frame(width: geo.size.width * CGFloat(stepIndex + 1) / 8.0, height: 6)
                     .animation(.easeOut(duration: 0.3), value: stepIndex)
             }
         }
@@ -117,8 +117,9 @@ struct OnboardingFlowView: View {
         case 1: profileStep
         case 2: preferencesStep
         case 3: chatLoggingStep
-        case 4: firstItemStep
-        case 5: previewStep
+        case 4: NotificationPermissionView(model: model, onContinue: continueFlow)
+        case 5: firstItemStep
+        case 6: previewStep
         default: paywallStep
         }
     }
@@ -129,12 +130,16 @@ struct OnboardingFlowView: View {
     private var brandControls: some View {
         if stepIndex == 0 {
             authControls
+        } else if stepIndex == 3 || stepIndex == 4 {
+            // Step 3: in-chat Continue button replaces composer after first save.
+            // Step 4: notification screen provides its own CTAs.
+            EmptyView()
         } else {
             Button(action: continueFlow) {
-                Text(stepIndex == 6 ? "START FREE TRIAL" : "CONTINUE")
-                    .brandPrimaryButton(isPaywall: stepIndex == 6, isDisabled: !canContinue)
+                Text(stepIndex == 7 ? "START FREE TRIAL" : "CONTINUE")
+                    .brandPrimaryButton(isPaywall: stepIndex == 7, isDisabled: !canContinue)
             }
-            .buttonStyle(BrandPrimaryButtonStyle(isPaywall: stepIndex == 6, isDisabled: !canContinue))
+            .buttonStyle(BrandPrimaryButtonStyle(isPaywall: stepIndex == 7, isDisabled: !canContinue))
             .disabled(!canContinue)
         }
     }
@@ -235,7 +240,13 @@ struct OnboardingFlowView: View {
     private var chatLoggingStep: some View {
         VStack(alignment: .leading, spacing: 16) {
             stepHeading("Chat Logging", subtitle: "Add items simply by typing in the chat!")
-            ChatView(model: model, hideMediaControls: true)
+                .padding(.horizontal, 24)
+            ChatView(
+                model: model,
+                hideMediaControls: true,
+                onItemConfirmed: { chatStepConfirmed = true; continueFlow() },
+                forceShowContinue: chatStepConfirmed
+            )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
@@ -679,18 +690,18 @@ struct OnboardingFlowView: View {
 
     private var canContinue: Bool {
         switch stepIndex {
-        case 0, 2, 3: true
+        case 0, 2, 3, 4: true
         case 1:
             isValidDisplayName
                 && (profile.email == nil || profile.email.map { isValidEmail($0) } ?? true)
-        case 4, 5: buildFirstItem() != nil
+        case 5, 6: buildFirstItem() != nil
         default: true
         }
     }
 
     private func continueFlow() {
         guard !isNavigating else { return }
-        if stepIndex < 6 {
+        if stepIndex < 7 {
             isNavigating = true
             goingForward = true
             withAnimation(.easeInOut(duration: 0.3)) { stepIndex += 1 }

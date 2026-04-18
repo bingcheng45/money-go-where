@@ -4,7 +4,12 @@ import SwiftUI
 struct ChatView: View {
     @Bindable var model: AppModel
     var hideMediaControls: Bool = false
+    var onItemConfirmed: (() -> Void)? = nil
+    var forceShowContinue: Bool = false
     @FocusState private var composerFocused: Bool
+    @State private var itemConfirmed = false
+
+    private var showingContinue: Bool { itemConfirmed || forceShowContinue }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -12,6 +17,10 @@ struct ChatView: View {
             composer
         }
         .background(Color.bgBase)
+        .onChange(of: model.session.recurringItems.count) { oldCount, newCount in
+            guard onItemConfirmed != nil, newCount > oldCount, !itemConfirmed else { return }
+            withAnimation(.easeOut(duration: 0.35)) { itemConfirmed = true }
+        }
     }
 
     private var conversationArea: some View {
@@ -28,12 +37,25 @@ struct ChatView: View {
                     })
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 24)
             .padding(.vertical, 20)
         }
     }
 
+    @ViewBuilder
     private var composer: some View {
+        if showingContinue, let onConfirmed = onItemConfirmed {
+            Button(action: onConfirmed) {
+                Text("CONTINUE")
+                    .brandPrimaryButton(isPaywall: false, isDisabled: false)
+            }
+            .buttonStyle(BrandPrimaryButtonStyle(isPaywall: false, isDisabled: false))
+            .padding(.horizontal, 24)
+            .padding(.vertical, 12)
+            .padding(.bottom, 8)
+            .background(Color.bgBase)
+            .transition(.opacity.combined(with: .move(edge: .bottom)))
+        } else {
         VStack(spacing: 12) {
             if model.isReadOnly {
                 Text("Your trial has ended. You can still review records, but adding or editing items is locked until you subscribe.")
@@ -43,26 +65,25 @@ struct ChatView: View {
             }
 
             if hideMediaControls {
-                // Compact overlay layout: send button floats over the text field
-                ZStack(alignment: .bottomTrailing) {
-                    TextField(
-                        "e.g. Netflix Subscription $20 a month",
-                        text: $model.composerText,
-                        prompt: Text("e.g. Netflix Subscription $20 a month").foregroundStyle(Color.white.opacity(0.45)),
-                        axis: .vertical
-                    )
-                    .lineLimit(1...5)
-                    .font(.system(size: 16, weight: .regular, design: .rounded))
-                    .foregroundStyle(.white)
-                    .tint(Color.accentBlue)
-                    .disabled(model.isReadOnly)
-                    .focused($composerFocused)
-                    .submitLabel(.send)
-                    .onSubmit { submitAndDismiss() }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.trailing, 48)
-                    sendButton
-                }
+                // Compact layout: overlay send button so TextField controls its own height,
+                // keeping placeholder vertically centred rather than bottom-aligned.
+                TextField(
+                    "e.g. Netflix Subscription $20 a month",
+                    text: $model.composerText,
+                    prompt: Text("e.g. Netflix Subscription $20 a month").foregroundStyle(Color.white.opacity(0.45)),
+                    axis: .vertical
+                )
+                .lineLimit(1...5)
+                .font(.system(size: 16, weight: .regular, design: .rounded))
+                .foregroundStyle(.white)
+                .tint(Color.accentBlue)
+                .disabled(model.isReadOnly)
+                .focused($composerFocused)
+                .submitLabel(.send)
+                .onSubmit { submitAndDismiss() }
+                .frame(maxWidth: .infinity)
+                .padding(.trailing, 48)
+                .overlay(alignment: .trailing) { sendButton }
                 .padding(14)
                 .background(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -113,6 +134,8 @@ struct ChatView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(Color.bgBase)
+        .transition(.opacity)
+        } // else
     }
 
     private func submitAndDismiss() {
@@ -195,6 +218,9 @@ private struct DraftReviewCard: View {
             draftRow("Amount", value: draft.amount?.formatted(localeIdentifier: profile.localeIdentifier) ?? "Missing", mandatory: true)
             draftRow("Cadence", value: draft.cadence?.displayTitle ?? "Missing", mandatory: true)
             draftRow("Next due", value: draft.nextDueDate?.formattedMonthDay() ?? "Missing")
+            if let endDate = draft.endDate {
+                draftRow("Ends", value: endDate.formattedMonthDay())
+            }
             draftRow("Type", value: draft.itemType?.displayTitle ?? "Missing", mandatory: true)
 
             HStack {
@@ -209,8 +235,16 @@ private struct DraftReviewCard: View {
                 Button("Confirm save") {
                     onConfirm()
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Color.brandGreen)
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(
+                    Color.brandGreen,
+                    in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+                )
+                .opacity(draft.readyForConfirmation ? 1.0 : 0.4)
+                .buttonStyle(BrandPrimaryButtonStyle(isDisabled: !draft.readyForConfirmation))
                 .disabled(!draft.readyForConfirmation)
             }
         }

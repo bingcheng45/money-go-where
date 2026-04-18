@@ -18,12 +18,8 @@ struct LocalReminderScheduler: ReminderScheduling {
         case .denied:
             status = .denied
         case .notDetermined:
-            do {
-                let granted = try await center.requestAuthorization(options: [.alert, .badge, .sound])
-                status = granted ? .authorized : .denied
-            } catch {
-                status = .denied
-            }
+            // Permission must be requested via the dedicated onboarding screen, not inline.
+            status = .unknown
         @unknown default:
             status = .unknown
         }

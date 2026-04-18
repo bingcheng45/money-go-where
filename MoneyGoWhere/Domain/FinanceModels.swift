@@ -153,6 +153,7 @@ struct RecurringItem: Codable, Identifiable, Hashable {
     var homeAmount: MoneyAmount
     var cadence: RecurrenceCadence
     var nextDueDate: Date
+    var endDate: Date?
     var itemType: RecurringItemType
     var paymentMethodLabel: String?
     var reminder: ReminderSettings
@@ -216,6 +217,7 @@ struct ExtractionDraft: Codable, Identifiable, Hashable {
     var homeAmount: MoneyAmount?
     var cadence: RecurrenceCadence?
     var nextDueDate: Date?
+    var endDate: Date?
     var itemType: RecurringItemType?
     var paymentMethodLabel: String?
     var source: ItemSource
@@ -234,6 +236,7 @@ struct ExtractionDraft: Codable, Identifiable, Hashable {
             homeAmount: nil,
             cadence: nil,
             nextDueDate: nil,
+            endDate: nil,
             itemType: nil,
             paymentMethodLabel: nil,
             source: source,
@@ -380,6 +383,7 @@ struct RecurringItemFormState: Hashable {
     var currencyCode: String
     var cadence: RecurrenceCadence
     var nextDueDate: Date
+    var endDate: Date?
     var itemType: RecurringItemType
     var paymentMethodLabel: String
     var remindersEnabled: Bool
@@ -395,6 +399,7 @@ struct RecurringItemFormState: Hashable {
             currencyCode: defaultCurrencyCode,
             cadence: .monthly,
             nextDueDate: .now,
+            endDate: nil,
             itemType: .expense,
             paymentMethodLabel: paymentMethod,
             remindersEnabled: false,
